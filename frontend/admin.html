@@ -1,1 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dealer Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Dealer — Add Car</h1>
+    <form id="addCarForm" enctype="multipart/form-data">
+      <input name="make" placeholder="Make" required>
+      <input name="model" placeholder="Model" required>
+      <input name="year" type="number" placeholder="Year">
+      <input name="price" type="number" placeholder="Price">
+      <textarea name="description" placeholder="Description"></textarea>
+      <input name="images" type="file" accept="image/*" multiple required>
+      <input name="adminPassword" type="password" placeholder="Admin password">
+      <button type="submit">Upload Car</button>
+    </form>
+    <div id="status"></div>
+  </main>
 
+  <script>
+    const API_BASE = 'https://YOUR_BACKEND_URL'; // REPLACE after deploy
+
+    document.getElementById('addCarForm').addEventListener('submit', async (e)=> {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+
+      const res = await fetch(`${API_BASE}/api/cars/add`, {
+        method: 'POST',
+        body: fd
+      });
+      const json = await res.json();
+      document.getElementById('status').textContent = json.error ? (json.error) : 'Car added!';
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
