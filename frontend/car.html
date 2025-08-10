@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Car Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <div id="car-details"></div>
+    <section id="contact">
+      <h3>Contact Dealer</h3>
+      <form id="contactForm">
+        <input name="name" placeholder="Your name" required>
+        <input name="email" type="email" placeholder="Email" required>
+        <input name="phone" placeholder="Phone">
+        <textarea name="message" placeholder="Message" required></textarea>
+        <button type="submit">Send</button>
+      </form>
+      <div id="contactResp"></div>
+    </section>
+  </main>
 
+  <script>
+    // Read car id from query string ?id=...
+    const params = new URLSearchParams(location.search);
+    const carId = params.get('id');
+
+    const API_BASE = 'https://YOUR_BACKEND_URL'; // REPLACE with backend URL after deploy
+
+    async function loadCar() {
+      const res = await fetch(`${API_BASE}/api/cars/${carId}`);
+      const car = await res.json();
+      const target = document.getElementById('car-details');
+      if (car.error) { target.textContent = 'Car not found'; return; }
+
+      let imgs = car.images.map(src => `<img src="${src}" alt="">`).join('');
+      target.innerHTML = `
+        <h1>${car.year} ${car.make} ${car.model}</h1>
+        <div class="detail-images">${imgs}</div>
+        <p class="price">$${car.price}</p>
+        <p>${car.description || ''}</p>
+      `;
+    }
+
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      data.carId = carId;
+      const res = await fetch(`${API_BASE}/api/messages/send`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      document.getElementById('contactResp').textContent = json.message || 'Sent!';
+      e.target.reset();
+    });
+
+    if (carId) loadCar();
+    else document.getElementById('car-details').textContent = 'No car selected.';
+  </script>
+</body>
+</html>
